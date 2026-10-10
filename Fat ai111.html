@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FAT AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#fff;--side:#f9f9f9;--tx:#0d0d0d;--mu:#6b6b6b;--bd:#e5e5e5;--ub:#f0f0f0;--box:#f4f4f4;--hov:#ececec;--code:#f7f7f7;--btn:#0d0d0d;--btx:#fff;--g:#22c55e;--b:#38bdf8;--r:#e11d48;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#212121;--side:#171717;--tx:#ececec;--mu:#a0a0a0;--bd:#3a3a3a;--ub:#303030;--box:#2f2f2f;--hov:#2a2a2a;--code:#161616;--btn:#ececec;--btx:#0d0d0d;--r:#fb7185}}
+:root[data-theme="dark"]{--bg:#212121;--side:#171717;--tx:#ececec;--mu:#a0a0a0;--bd:#3a3a3a;--ub:#303030;--box:#2f2f2f;--hov:#2a2a2a;--code:#161616;--btn:#ececec;--btx:#0d0d0d;--r:#fb7185}
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 16px/1.6 Inter,"Hind Siliguri",system-ui,sans-serif;overflow:hidden}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+h1{margin:0;font-size:24px;font-weight:600;line-height:1.3}
+.hero{width:64px;height:64px}
+.hero svg{width:64px;height:64px;display:block}
+.mu{color:var(--mu);font-size:14px;text-align:center}
+/* splash */
+#splash{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.spin{width:30px;height:30px;border:3px solid var(--bd);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* auth + expired */
+#auth,#expired{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.acard{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px;align-items:stretch;text-align:center}
+.acard .hero{margin:0 auto}
+.tabs{display:flex;gap:6px;background:var(--box);border-radius:14px;padding:4px}
+.tab{flex:1;padding:9px;border-radius:10px;color:var(--mu)}
+.tab.on{background:var(--bg);color:var(--tx);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+form{display:flex;flex-direction:column;gap:10px}
+.fi{padding:13px 14px;border:1px solid var(--bd);border-radius:14px;background:var(--box);color:var(--tx);font:inherit;font-size:16px;outline:0;width:100%}
+.fi:focus{border-color:var(--b)}
+.btn{display:block;text-align:center;text-decoration:none;padding:13px;border-radius:14px;font-size:16px;font-weight:600;width:100%}
+.btn:disabled{opacity:.55}
+.btn.main{background:var(--btn);color:var(--btx)}
+.btn.g{border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;gap:10px}
+.gl{width:20px;height:20px;flex:none}
+.link{color:var(--b);font-size:14px;padding:4px}
+.or{color:var(--mu);font-size:13px;display:flex;align-items:center;gap:10px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--bd)}
+.aerr{color:var(--r);font-size:14px;text-align:left;white-space:pre-line;line-height:1.5}
+.aok{color:var(--g);font-size:14px;text-align:left}
+.trialbox{background:var(--box);border-radius:14px;padding:12px;font-size:14px;text-align:left}
+/* app */
+#app{height:100%;display:flex;flex-direction:column;max-width:780px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;min-height:52px}
+.ib{width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+.ib:hover{background:var(--hov)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;letter-spacing:.3px}
+.brand svg{width:26px;height:26px;display:block}
+main{flex:1;min-height:0;overflow-y:auto;padding:4px 16px 12px}
+#empty{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;padding-bottom:30px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:520px}
+.sg button{text-align:left;border:1px solid var(--bd);border-radius:16px;padding:11px 12px;font-size:14px;display:flex;flex-direction:column;gap:4px;min-height:80px}
+.sg button:hover{background:var(--hov)}
+.sg small{color:var(--mu);font-size:12.5px}
+.m{margin:14px 0;display:flex;flex-direction:column}
+.m.u{align-items:flex-end}
+.bub{background:var(--ub);padding:9px 15px;border-radius:20px;max-width:85%;white-space:pre-wrap;word-break:break-word}
+.bub img,.gen img{display:block;max-width:100%;max-height:300px;border-radius:14px;margin-bottom:6px}
+.c{word-break:break-word}
+.c p{margin:0 0 .8em}.c h3{margin:1em 0 .4em;font-size:17px}
+.c ul,.c ol{margin:0 0 .8em;padding-left:1.4em}.c li{margin:.2em 0}
+.c code{background:var(--code);border:1px solid var(--bd);border-radius:6px;padding:1px 5px;font:13.5px ui-monospace,Menlo,monospace}
+.c.err{color:var(--r)}
+.cb{border-radius:14px;overflow:hidden;background:var(--code);border:1px solid var(--bd);margin:0 0 .9em}
+.ch{display:flex;justify-content:space-between;padding:6px 12px;font-size:12.5px;color:var(--mu);border-bottom:1px solid var(--bd)}
+.ch button{color:var(--mu);font-size:12.5px}
+.cb pre{margin:0;padding:12px;overflow-x:auto}
+.cb code{background:none;border:0;padding:0;font-size:13px}
+.caret{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--tx);margin-left:3px;animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.2}}
+.act{display:flex;gap:2px;margin-top:2px;color:var(--mu);flex-wrap:wrap}
+.act button{height:32px;padding:0 7px;border-radius:10px;display:flex;align-items:center;gap:4px;color:var(--mu);font-size:12.5px}
+.act button:hover{background:var(--hov);color:var(--tx)}
+footer{padding:4px 12px 6px}
+.att{display:flex;align-items:center;gap:8px;margin:0 6px 6px}
+.att img{width:52px;height:52px;object-fit:cover;border-radius:12px;border:1px solid var(--bd)}
+.att button{background:var(--hov);border-radius:50%;width:24px;height:24px;display:grid;place-items:center}
+.box{display:flex;align-items:flex-end;gap:4px;background:var(--box);border-radius:26px;padding:6px}
+.box textarea{flex:1;min-width:0;resize:none;border:0;background:none;color:var(--tx);font:inherit;font-size:16px;line-height:1.5;padding:9px 4px;max-height:140px;outline:0}
+.box textarea::placeholder{color:var(--mu)}
+.go{width:38px;height:38px;border-radius:50%;background:var(--btn);color:var(--btx);display:grid;place-items:center;flex:none;margin:1px}
+.go.v{background:linear-gradient(135deg,var(--g),var(--b));color:#06210f}
+.bar{display:flex;gap:6px;padding:6px 6px 0;align-items:center}
+.chip{border:1px solid var(--bd);border-radius:99px;padding:4px 12px;font-size:13px;color:var(--mu)}
+.chip.on{background:var(--btn);color:var(--btx);border-color:transparent}
+.fine{text-align:center;color:var(--mu);font-size:12px;padding:6px 8px 0}
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20}
+#pan{position:fixed;top:0;bottom:0;left:0;width:min(84vw,320px);background:var(--side);z-index:21;display:flex;flex-direction:column;padding:12px 10px;transform:translateX(-105%);transition:transform .22s}
+#pan.open{transform:none}
+.srch{display:flex;align-items:center;gap:8px;background:var(--box);border-radius:12px;padding:0 10px;margin-bottom:6px}
+.srch input{flex:1;min-width:0;border:0;background:none;color:var(--tx);font:inherit;font-size:15px;padding:10px 0;outline:0}
+.nb{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;width:100%;text-align:left;font-size:15px}
+.nb:hover,.nb.on{background:var(--hov)}
+.lst{flex:1;overflow-y:auto;margin:6px 0}
+.lst .nb span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lst .nb button{color:var(--mu);padding:2px}
+.lbl{color:var(--mu);font-size:12.5px;padding:8px 10px 2px}
+.set{border-top:1px solid var(--bd);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.chips{display:flex;gap:6px;padding:0 6px}
+.me{display:flex;align-items:center;gap:10px;padding:4px 6px}
+.av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--b));display:grid;place-items:center;color:#06210f;font-weight:700;overflow:hidden;flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+.mi{display:flex;flex-direction:column;min-width:0}
+.mi b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mi small{color:var(--mu);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trial{font-size:12.5px;color:var(--g);padding:0 6px}
+.trial.warn{color:var(--r)}
+/* voice */
+#voice{position:fixed;inset:0;z-index:30;background:#0b0f0d;color:#eef7f2;display:none;flex-direction:column;align-items:center;padding:calc(14px + env(safe-area-inset-top,0px)) 20px calc(22px + env(safe-area-inset-bottom,0px))}
+#voice.open{display:flex}
+.vtop{display:flex;width:100%;justify-content:space-between}
+.vmid{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.vtx{max-width:94%;max-height:28vh;overflow-y:auto;text-align:center;font-size:16px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.vtx.ai{color:#bfe9d3}
+.orb{width:180px;height:180px;flex:none;border-radius:50%;background:conic-gradient(from 0deg,#22c55e,#38bdf8,#a855f7,#fb7185,#fb923c,#22c55e);box-shadow:0 0 70px rgba(56,189,248,.35);animation:sp 9s linear infinite;cursor:pointer}
+.orb.li{animation:sp 5s linear infinite,pu 1.8s ease-in-out infinite}
+.orb.th{animation:sp 1.4s linear infinite}
+.orb.sp{animation:sp 4s linear infinite,pu .8s ease-in-out infinite}
+@keyframes sp{to{rotate:360deg}}@keyframes pu{50%{transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){.orb,.caret,.spin{animation:none}}
+.vbot{width:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+#vs{font-size:16px;text-align:center;min-height:24px}
+.vx{width:58px;height:58px;border-radius:50%;background:var(--r);color:#2a0710;display:grid;place-items:center}
+#toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:var(--btn);color:var(--btx);padding:9px 16px;border-radius:99px;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="splash">
+  <div class="hero" id="shero"></div>
+  <div class="spin"></div>
+  <div class="mu">লোড হচ্ছে…</div>
+</div>
+
+<!-- Login / Register -->
+<section id="auth" hidden>
+  <div class="acard">
+    <div class="hero" id="ahero"></div>
+    <h1>FAT AI-তে স্বাগতম</h1>
+    <div class="trialbox">নিবন্ধন বা লগইনের পর <b>৭ দিন বিনামূল্যে</b> সব সুবিধা ব্যবহার করতে পারবেন।</div>
+    <div class="tabs">
+      <button class="tab on" id="tLogin" type="button">লগইন</button>
+      <button class="tab" id="tReg" type="button">নিবন্ধন</button>
+    </div>
+    <form id="fm" novalidate>
+      <input class="fi" id="fName" placeholder="আপনার নাম" autocomplete="name" hidden>
+      <input class="fi" id="fEmail" type="email" placeholder="ইমেইল" autocomplete="email" required>
+      <input class="fi" id="fPass" type="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" autocomplete="current-password" required>
+      <button class="btn main" id="fSubmit" type="submit">লগইন</button>
+    </form>
+    <button class="link" id="fForgot" type="button">পাসওয়ার্ড ভুলে গেছেন?</button>
+    <div class="or">অথবা</div>
+    <button class="btn g" id="gBtn" type="button">
+      <svg class="gl" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+      Google দিয়ে চালিয়ে যান
+    </button>
+    <div class="aerr" id="aErr" hidden></div>
+    <div class="aok" id="aOk" hidden></div>
+  </div>
+</section>
+
+<!-- Trial expired -->
+<section id="expired" hidden>
+  <div class="acard">
+    <div class="hero" id="ehero"></div>
+    <h1>ফ্রি ট্রায়াল শেষ হয়েছে</h1>
+    <p class="mu">আপনার ৭ দিনের ফ্রি সময় শেষ হয়েছে। চালিয়ে যেতে যোগাযোগ করুন।</p>
+    <a class="btn main" id="upg" href="#" target="_blank" rel="noopener" hidden>যোগাযোগ করুন</a>
+    <button class="btn g" id="elogout" type="button">লগআউট</button>
+  </div>
+</section>
+
+<!-- Main app -->
+<div id="app" hidden>
+  <header>
+    <button class="ib" id="bm" aria-label="মেনু"></button>
+    <div class="brand" id="brand"></div>
+    <button class="ib" id="bn" aria-label="নতুন চ্যাট"></button>
+  </header>
+  <main id="main">
+    <div id="empty">
+      <div class="hero" id="hero"></div>
+      <h1>আজ কীভাবে সাহায্য করতে পারি?</h1>
+      <div class="sg" id="sg"></div>
+    </div>
+    <div id="thread"></div>
+  </main>
+  <footer>
+    <div class="att" id="att" hidden><img id="ati" alt="সংযুক্ত ছবি"><button id="atx" aria-label="ছবি সরান">✕</button></div>
+    <div class="box">
+      <button class="ib" id="bp" aria-label="ছবি যোগ করুন">+</button>
+      <textarea id="ci" rows="1" placeholder="FAT AI-কে জিজ্ঞাসা করুন" aria-label="বার্তা"></textarea>
+      <button class="go v" id="go" aria-label="ভয়েস"></button>
+    </div>
+    <div class="bar"><button class="chip" id="bmode">🎨 ছবি এডিট / তৈরি</button></div>
+    <div class="fine">FAT AI ভুল করতে পারে। গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।</div>
+    <input type="file" id="file" accept="image/png,image/jpeg,image/webp" hidden>
+  </footer>
+</div>
+
+<div id="scrim" hidden></div>
+<aside id="pan">
+  <div class="srch"><span style="color:var(--mu)">⌕</span><input id="sq" placeholder="চ্যাট খুঁজুন" aria-label="চ্যাট খুঁজুন"></div>
+  <button class="nb" id="sn">＋ নতুন চ্যাট</button>
+  <div class="lbl">সাম্প্রতিক</div>
+  <div class="lst" id="lst"></div>
+  <div class="set">
+    <div class="trial" id="trial"></div>
+    <div class="chips"><button class="chip" data-th="auto">অটো</button><button class="chip" data-th="light">লাইট</button><button class="chip" data-th="dark">ডার্ক</button></div>
+    <button class="nb" id="sc">🗑 সব চ্যাট মুছুন</button>
+    <div class="me"><div class="av" id="av"></div><div class="mi"><b id="uname"></b><small id="umail"></small></div></div>
+    <button class="nb" id="logout">↩ লগআউট</button>
+  </div>
+</aside>
+
+<div id="voice">
+  <div class="vtop"><button class="chip" id="vl" style="color:#eef7f2;border-color:#3a4a43">বাংলা</button><span></span></div>
+  <div class="vmid">
+    <div class="vtx" id="vu"></div>
+    <div class="orb" id="vo" title="থামাতে বা আবার শুনতে ট্যাপ করুন"></div>
+    <div class="vtx ai" id="va"></div>
+  </div>
+  <div class="vbot">
+    <div id="vs"></div>
+    <button id="vx" class="vx" aria-label="বন্ধ করুন">✕</button>
+  </div>
+</div>
+<div id="toast" role="status"></div>
+
+<script type="module">
+// ===== Config =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBkdA4CKhxNcM79TLRBcSVktBvIeOQb51w",
+  authDomain: "fatai-b7a5f.firebaseapp.com",
+  databaseURL: "https://fatai-b7a5f-default-rtdb.firebaseio.com",
+  projectId: "fatai-b7a5f",
+  storageBucket: "fatai-b7a5f.firebasestorage.app",
+  messagingSenderId: "281173699661",
+  appId: "1:281173699661:web:2a98191e7e3dc883304004",
+  measurementId: "G-MB2EG2V9QN"
+};
+const TRIAL_DAYS = 7;
+const UPGRADE_URL = ""; // আপনার যোগাযোগ লিংক, যেমন https://wa.me/8801XXXXXXXXX (খালি রাখলে লিংক দেখাবে না)
+const SYS = "তুমি FAT AI, একজন বুদ্ধিমান ও বন্ধুভাবাপন্ন এআই সহকারী। ব্যবহারকারী যে ভাষায় লেখে (বাংলা, ইংরেজি বা অন্য ভাষা) সেই ভাষায় উত্তর দাও। উত্তর পরিষ্কার, গোছানো ও সংক্ষিপ্ত রাখো; প্রয়োজনে তালিকা ও কোড ব্লক ব্যবহার করো। তথ্য নিশ্চিত না হলে তা স্বীকার করো এবং কোনো উৎস বা পরিসংখ্যান বানিয়ে বলো না। ভয়েসে কথা হলে উত্তর ছোট ও সহজ রাখো।";
+
+// ===== Helpers =====
+const $ = s => document.querySelector(s);
+const logo = id => `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22c55e"/><stop offset=".5" stop-color="#38bdf8"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="url(#lg${id})"/><path d="M22 46V18h22v6H29v8h13v6H29v8z" fill="#fff"/><path d="M48 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fff" opacity=".92"/></svg>`;
+const ICON = {
+  send: "M12 19V5M5 12l7-7 7 7", stop: "M7 7h10v10H7z", mic: "M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3zM5 11a7 7 0 0014 0M12 18v3",
+  copy: "M9 9h10v10H9zM5 15V5h10", spk: "M4 9v6h4l5 4V5L8 9zM16 8a5 5 0 010 8", redo: "M20 11a8 8 0 10-2.3 5.7M20 4v7h-7",
+  brush: "M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z", trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
+  menu: "M4 6h16M4 12h16M4 18h16", pen: "M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z", dl: "M12 4v11M7 10l5 5 5-5M5 20h14"
+};
+const ic = (n, s = 18) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="${n === "stop" ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ICON[n]}"/></svg>`;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+const toast = t => { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2600); };
+const grow = () => { const t = $("#ci"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 140) + "px"; };
+const readDataUrl = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = no; r.readAsDataURL(f); });
+const parseDataUrl = u => { const [head, data] = u.split(","); return { mime: head.slice(5, head.indexOf(";")), data }; };
+
+// ===== Screens =====
+function showScreen(n) {
+  $("#splash").hidden = n !== "splash";
+  $("#auth").hidden = n !== "auth";
+  $("#expired").hidden = n !== "expired";
+  $("#app").hidden = n !== "app";
+}
+
+// ===== Firebase state =====
+const F = { A: null, auth: null, provider: null, db: null, D: null, uid: null, trialOk: false };
+let chatModel = null, imageModel = null, aiErr = "";
+const DAY = 864e5;
+
+async function boot() {
+  try {
+    const [appMod, aiMod, authMod, dbMod] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/11.10.0/firebase-ai.js"),
+      import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"),
+      import("https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js")
+    ]);
+    const app = appMod.initializeApp(firebaseConfig);
+    const ai = aiMod.getAI(app, { backend: new aiMod.GoogleAIBackend() });
+    chatModel = aiMod.getGenerativeModel(ai, { model: "gemini-2.5-flash", systemInstruction: SYS });
+    imageModel = aiMod.getGenerativeModel(ai, { model: "gemini-2.5-flash-image", generationConfig: { responseModalities: ["TEXT", "IMAGE"] } });
+
+    F.A = authMod;
+    F.auth = authMod.getAuth(app);
+    F.provider = new authMod.GoogleAuthProvider();
+    F.provider.setCustomParameters({ prompt: "select_account" });
+    F.D = dbMod;
+    F.db = dbMod.getDatabase(app);
+
+    authMod.getRedirectResult(F.auth).catch(e => showAuthErr(explainAuth(e)));
+    authMod.onAuthStateChanged(F.auth, onUser);
+  } catch (e) {
+    aiErr = String((e && e.message) || e);
+    console.error("Firebase boot failed:", e);
+    showScreen("auth");
+    showAuthErr("Firebase লোড হয়নি। ইন্টারনেট সংযোগ বা ব্লকিং সেটিং দেখুন।");
+  }
+}
+
+// ===== Trial (7 days from first sign-in) =====
+async function checkTrial(uid) {
+  try {
+    const r = F.D.ref(F.db, `users/${uid}/trialStart`);
+    let snap = await F.D.get(r);
+    if (!snap.exists()) {
+      await F.D.set(r, F.D.serverTimestamp());
+      snap = await F.D.get(r);
+    }
+    const start = Number(snap.val());
+    if (!start) throw new Error("trialStart missing");
+    const left = start + TRIAL_DAYS * DAY - Date.now();
+    return { ok: true, expired: left <= 0, daysLeft: Math.max(0, Math.ceil(left / DAY)) };
+  } catch (e) {
+    // Database unavailable: do not block the user, but do not claim a trial either.
+    console.warn("Trial check failed:", e);
+    return { ok: false, expired: false, daysLeft: null };
+  }
+}
+function showTrial(t) {
+  const el = $("#trial");
+  if (!t.ok) { el.textContent = "ফ্রি ট্রায়াল তথ্য লোড হয়নি"; el.className = "trial warn"; return; }
+  el.textContent = `ফ্রি ট্রায়াল: আর ${t.daysLeft} দিন বাকি`;
+  el.className = "trial" + (t.daysLeft <= 1 ? " warn" : "");
+}
+
+async function onUser(user) {
+  if (!user) {
+    F.uid = null; F.trialOk = false;
+    chats = []; cur = null;
+    showScreen("auth");
+    return;
+  }
+  F.uid = user.uid;
+  showScreen("splash");
+  fillUser(user);
+  const t = await checkTrial(user.uid);
+  if (!F.uid || F.uid !== user.uid) return; // user changed while checking
+  if (t.expired) {
+    F.trialOk = false;
+    const link = $("#upg");
+    if (UPGRADE_URL) { link.href = UPGRADE_URL; link.hidden = false; }
+    showScreen("expired");
+    return;
+  }
+  F.trialOk = true;
+  chats = store.get(chatKey(), []);
+  cur = null;
+  showTrial(t);
+  showScreen("app");
+  renderAll(true);
+}
+function fillUser(u) {
+  const name = u.displayName || (u.email ? u.email.split("@")[0] : "ব্যবহারকারী");
+  $("#uname").textContent = name;
+  $("#umail").textContent = u.email || "";
+  const av = $("#av"); av.innerHTML = "";
+  if (u.photoURL) { const img = document.createElement("img"); img.src = u.photoURL; img.referrerPolicy = "no-referrer"; av.appendChild(img); }
+  else av.textContent = name[0].toUpperCase();
+}
+const chatKey = () => "fat_chats_" + F.uid;
+
+function explainAuth(e) {
+  const code = (e && e.code) || "";
+  const map = {
+    "auth/invalid-email": "ইমেইল ঠিক নেই।",
+    "auth/missing-password": "পাসওয়ার্ড দিন।",
+    "auth/invalid-credential": "ইমেইল বা পাসওয়ার্ড ভুল। আবার চেষ্টা করুন।",
+    "auth/wrong-password": "পাসওয়ার্ড ভুল।",
+    "auth/user-not-found": "এই ইমেইলে কোনো অ্যাকাউন্ট নেই। নিবন্ধন করুন।",
+    "auth/email-already-in-use": "এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট আছে। লগইন করুন।",
+    "auth/weak-password": "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+    "auth/too-many-requests": "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+    "auth/network-request-failed": "ইন্টারনেট সংযোগে সমস্যা।",
+    "auth/operation-not-allowed": "Firebase-এ Email/Password বা Google লগইন চালু করা নেই। Authentication → Sign-in method থেকে চালু করুন।",
+    "auth/unauthorized-domain": "এই ওয়েবসাইটের ডোমেইন Firebase-এর Authorized domains-এ যোগ করা নেই। Authentication → Settings → Authorized domains-এ যোগ করুন।",
+    "auth/account-exists-with-different-credential": "এই ইমেইল অন্য পদ্ধতিতে নিবন্ধিত। সেই পদ্ধতিতে লগইন করুন।",
+    "auth/popup-closed-by-user": "লগইন উইন্ডো বন্ধ হয়ে গেছে।",
+    "auth/cancelled-popup-request": "লগইন বাতিল হয়েছে। আবার চেষ্টা করুন।"
+  };
+  return map[code] || "লগইন করা যায়নি" + (code ? " (" + code + ")" : "") + ".";
+}
+function showAuthErr(msg) { const el = $("#aErr"); el.textContent = msg; el.hidden = !msg; $("#aOk").hidden = true; }
+function showAuthOk(msg) { const el = $("#aOk"); el.textContent = msg; el.hidden = !msg; $("#aErr").hidden = true; }
+function setAuthBusy(b) { document.querySelectorAll("#auth button, #auth input").forEach(x => x.disabled = b); }
+
+// ===== Auth UI =====
+let authMode = "login";
+function setAuthMode(m) {
+  authMode = m;
+  $("#tLogin").classList.toggle("on", m === "login");
+  $("#tReg").classList.toggle("on", m === "register");
+  $("#fName").hidden = m !== "register";
+  $("#fSubmit").textContent = m === "login" ? "লগইন" : "নিবন্ধন করুন";
+  $("#fPass").autocomplete = m === "login" ? "current-password" : "new-password";
+  showAuthErr("");
+}
+$("#tLogin").onclick = () => setAuthMode("login");
+$("#tReg").onclick = () => setAuthMode("register");
+$("#fm").onsubmit = async e => {
+  e.preventDefault();
+  if (!F.auth) return showAuthErr("Firebase এখনো প্রস্তুত নয়। একটু পরে আবার চেষ্টা করুন।");
+  const email = $("#fEmail").value.trim(), pass = $("#fPass").value;
+  if (!email || !pass) return showAuthErr("ইমেইল ও পাসওয়ার্ড দিন।");
+  if (authMode === "register" && pass.length < 6) return showAuthErr("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।");
+  setAuthBusy(true); showAuthErr("");
+  try {
+    if (authMode === "login") {
+      await F.A.signInWithEmailAndPassword(F.auth, email, pass);
+    } else {
+      const cred = await F.A.createUserWithEmailAndPassword(F.auth, email, pass);
+      const name = $("#fName").value.trim();
+      if (name) await F.A.updateProfile(cred.user, { displayName: name });
+    }
+  } catch (err) {
+    showAuthErr(explainAuth(err));
+  }
+  setAuthBusy(false);
+};
+$("#fForgot").onclick = async () => {
+  const email = $("#fEmail").value.trim();
+  if (!email) return showAuthErr("আগে ইমেইল লিখুন।");
+  try { await F.A.sendPasswordResetEmail(F.auth, email); showAuthOk("পাসওয়ার্ড রিসেট লিংক ইমেইলে পাঠানো হয়েছে।"); }
+  catch (err) { showAuthErr(explainAuth(err)); }
+};
+$("#gBtn").onclick = async () => {
+  if (!F.auth) return showAuthErr("Firebase এখনো প্রস্তুত নয়।");
+  setAuthBusy(true); showAuthErr("");
+  try {
+    await F.A.signInWithPopup(F.auth, F.provider);
+  } catch (err) {
+    const code = err.code || "";
+    if (/popup-blocked|operation-not-supported|web-storage/.test(code)) {
+      try { await F.A.signInWithRedirect(F.auth, F.provider); return; }
+      catch (e2) { showAuthErr(explainAuth(e2)); }
+    } else if (code !== "auth/popup-closed-by-user") {
+      showAuthErr(explainAuth(err));
+    }
+  }
+  setAuthBusy(false);
+};
+async function doLogout() {
+  if (busy) return toast("উত্তর চলছে, একটু অপেক্ষা করুন");
+  side(false);
+  try { await F.A.signOut(F.auth); } catch {}
+}
+$("#logout").onclick = doLogout;
+$("#elogout").onclick = doLogout;
+
+// ===== Markdown (safe DOM) =====
+function inl(el, s) {
+  s.split(/(\*\*[^*]+\*\*|`[^`]+`)/).forEach(x => {
+    if (!x) return;
+    let n;
+    if (/^\*\*.+\*\*$/.test(x)) { n = document.createElement("strong"); n.textContent = x.slice(2, -2); }
+    else if (/^`.+`$/.test(x)) { n = document.createElement("code"); n.textContent = x.slice(1, -1); }
+    else n = document.createTextNode(x);
+    el.appendChild(n);
+  });
+}
+function prose(el, p) {
+  let list = null;
+  p.split("\n").forEach(line => {
+    let m;
+    if ((m = line.match(/^#{1,4}\s+(.*)/))) { list = null; const h = document.createElement("h3"); inl(h, m[1]); el.appendChild(h); }
+    else if ((m = line.match(/^\s*([-*•]|\d+[.)])\s+(.*)/))) {
+      const t = /\d/.test(m[1]) ? "OL" : "UL";
+      if (!list || list.tagName !== t) { list = document.createElement(t); el.appendChild(list); }
+      const li = document.createElement("li"); inl(li, m[2]); list.appendChild(li);
+    }
+    else if (line.trim()) { list = null; const q = document.createElement("p"); inl(q, line); el.appendChild(q); }
+    else list = null;
+  });
+}
+function md(el, t) {
+  el.textContent = "";
+  t.split("```").forEach((p, i) => {
+    if (i % 2 === 0) return prose(el, p);
+    const nl = p.indexOf("\n"), lg = nl > -1 ? p.slice(0, nl).trim() : "", code = (nl > -1 ? p.slice(nl + 1) : p).replace(/\n$/, "");
+    const w = document.createElement("div"); w.className = "cb";
+    const h = document.createElement("div"); h.className = "ch";
+    const s = document.createElement("span"); s.textContent = lg || "কোড";
+    const b = document.createElement("button"); b.textContent = "কপি"; b.onclick = () => copy(code);
+    h.append(s, b);
+    const pre = document.createElement("pre"), cd = document.createElement("code"); cd.textContent = code; pre.appendChild(cd);
+    w.append(h, pre); el.appendChild(w);
+  });
+}
+async function copy(t) { try { await navigator.clipboard.writeText(t); toast("কপি হয়েছে"); } catch { toast("কপি করা যায়নি"); } }
+
+// ===== State =====
+let chats = [], cur = null, busy = false, stopped = false, att = null, imgMode = false, lang = "bn-BD";
+$("#brand").innerHTML = `<span style="width:26px;height:26px;display:inline-block">${logo("b")}</span>FAT AI`;
+$("#hero").innerHTML = logo("h");
+$("#shero").innerHTML = logo("s");
+$("#ahero").innerHTML = logo("a");
+$("#ehero").innerHTML = logo("e");
+$("#bm").innerHTML = ic("menu"); $("#bn").innerHTML = ic("pen");
+const fav = document.createElement("link"); fav.rel = "icon"; fav.href = "data:image/svg+xml," + encodeURIComponent(logo("f")); document.head.appendChild(fav);
+
+const SUG = [
+  ["বাংলাদেশের ইতিহাস", "বাংলাদেশের স্বাধীনতা যুদ্ধের ইতিহাস সংক্ষেপে বলো"],
+  ["কোডিং", "পাইথনে একটি সাধারণ ক্যালকুলেটর লিখে দাও"],
+  ["লেখালেখি", "একটি ভদ্র ছুটির আবেদন ইমেইল লিখে দাও"],
+  ["ছবি এডিট", "ছবি আপলোড করে ব্যাকগ্রাউন্ড বদলানোর উপায় বলো"]
+];
+$("#sg").innerHTML = SUG.map((s, i) => `<button data-i="${i}">${s[0]}<small>${s[1].slice(0, 36)}…</small></button>`).join("");
+$("#sg").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const [title, text] = SUG[b.dataset.i];
+  if (title === "ছবি এডিট") { setMode(true); toast("ছবি যোগ করে এডিটের নির্দেশ লিখুন"); $("#ci").focus(); }
+  else ask(text);
+};
+
+// ===== Rendering =====
+function histContents(msgs) {
+  const valid = msgs.filter(m => !m.err && (m.r === "user" || m.c || m.gen));
+  const withImg = valid.map((m, i) => (m.inline ? i : -1)).filter(i => i >= 0).slice(-3);
+  return valid.map((m, i) => {
+    const parts = [];
+    if (withImg.includes(i)) parts.push({ inlineData: m.inline });
+    parts.push({ text: m.c || "(ছবি)" });
+    return { role: m.r === "assistant" ? "model" : "user", parts };
+  });
+}
+function explain(e) {
+  const msg = String((e && e.message) || e || "");
+  if (aiErr && !chatModel) return "AI সংযোগ শুরু হয়নি: " + aiErr.slice(0, 160);
+  if (/\b429\b|quota|rate limit|resource.?exhausted/i.test(msg)) return "এআই-এর ব্যবহারের সীমা এখন শেষ। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
+  if (/api key|permission|not enabled|disabled|403|PERMISSION/i.test(msg)) return "Firebase কনসোলে AI Logic (Gemini Developer API) চালু আছে কিনা এবং API key ঠিক আছে কিনা দেখুন।";
+  if (/safety|blocked/i.test(msg)) return "এই অনুরোধের উত্তর দেওয়া যাচ্ছে না। অন্যভাবে লিখে দেখুন।";
+  if (/network|fetch|Failed/i.test(msg)) return "ইন্টারনেট সংযোগে সমস্যা। আবার চেষ্টা করুন।";
+  return "উত্তর আনা যায়নি। " + msg.slice(0, 160);
+}
+function actions(m, last) {
+  const a = document.createElement("div"); a.className = "act";
+  const btn = (html, label, fn) => { const b = document.createElement("button"); b.innerHTML = html + `<span>${label}</span>`; b.setAttribute("aria-label", label); b.onclick = fn; return b; };
+  if (m.c) a.append(btn(ic("copy", 16), "কপি", () => copy(m.c)));
+  if (m.c) a.append(btn(ic("spk", 16), "শুনুন", () => speakOnce(m.c)));
+  if (m.gen) {
+    a.append(btn(ic("dl", 16), "ডাউনলোড", () => { const l = document.createElement("a"); l.href = m.gen; l.download = "fat-ai-image.png"; l.click(); }));
+    a.append(btn(ic("brush", 16), "এডিট করুন", () => editGenerated(m.gen)));
+  }
+  if (last && !busy) a.append(btn(ic("redo", 16), "আবার", regenerate));
+  return a;
+}
+function addMsg(m, last) {
+  const d = document.createElement("div"); d.className = "m " + (m.r === "user" ? "u" : "a");
+  if (m.r === "user") {
+    const b = document.createElement("div"); b.className = "bub";
+    if (m.url) { const i = new Image(); i.src = m.url; i.alt = "ছবি"; b.appendChild(i); }
+    b.appendChild(document.createTextNode(m.c)); d.appendChild(b);
+  } else {
+    if (m.gen) { const g = document.createElement("div"); g.className = "gen"; const i = new Image(); i.src = m.gen; i.alt = "তৈরি ছবি"; g.appendChild(i); d.appendChild(g); }
+    const c = document.createElement("div"); c.className = "c" + (m.err ? " err" : "");
+    md(c, m.c || "");
+    if (busy && last && !m.err) { const k = document.createElement("span"); k.className = "caret"; c.appendChild(k); }
+    d.appendChild(c);
+    if (m.c || m.gen) d.appendChild(actions(m, last));
+  }
+  $("#thread").appendChild(d);
+}
+function renderAll(force) {
+  const main = $("#main");
+  const near = main.scrollHeight - main.scrollTop - main.clientHeight < 140;
+  const ms = cur ? cur.msgs : [];
+  $("#thread").innerHTML = "";
+  $("#empty").hidden = ms.length > 0;
+  ms.forEach((m, i) => addMsg(m, i === ms.length - 1 && m.r === "assistant"));
+  if (force || near) main.scrollTop = main.scrollHeight;
+  drawList();
+}
+let raf = 0;
+const paint = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; renderAll(); }); };
+function save() {
+  if (!F.uid) return;
+  store.set(chatKey(), chats.slice(0, 50).map(c => ({ id: c.id, title: c.title, msgs: c.msgs.filter(m => !m.err).map(m => ({ r: m.r, c: m.c })) })));
+}
+function setGo() {
+  const g = $("#go"), has = $("#ci").value.trim() || att;
+  g.className = "go" + (busy || has ? "" : " v");
+  g.innerHTML = busy ? ic("stop") : has ? ic("send") : ic("mic");
+  g.setAttribute("aria-label", busy ? "থামান" : has ? "পাঠান" : "ভয়েস");
+}
+function setMode(on) { imgMode = on; $("#bmode").classList.toggle("on", on); }
+
+// ===== Core AI calls =====
+async function ask(text, fromVoice) {
+  text = (text || "").trim();
+  if (!F.uid || !F.trialOk) return "";
+  if (busy || (!text && !att)) return "";
+  if (!cur) { cur = { id: Date.now(), title: (text || "নতুন ছবি").slice(0, 40), msgs: [] }; chats.unshift(cur); }
+  const mode = fromVoice ? false : imgMode;
+  const m = { r: "user", c: text || (mode ? "এই ছবিটি এডিট করো" : "এই ছবিটি সম্পর্কে বলো") };
+  if (att) { m.url = att.url; m.inline = { mimeType: att.mime, data: att.data }; }
+  cur.msgs.push(m);
+  clearAtt(); $("#ci").value = ""; grow();
+  return generate(mode);
+}
+async function generate(mode) {
+  const a = { r: "assistant", c: "", gen: null, img: mode };
+  cur.msgs.push(a);
+  busy = true; stopped = false; setGo(); renderAll(true);
+  try {
+    if (mode) await runImage(a); else await runChat(a);
+  } catch (e) {
+    console.error(e);
+    a.c = explain(e); a.err = true;
+  }
+  busy = false; setGo(); save(); renderAll();
+  return a.err ? "" : a.c;
+}
+async function runChat(a) {
+  if (!chatModel) throw new Error(aiErr || "AI সংযোগ নেই");
+  const res = await chatModel.generateContentStream({ contents: histContents(cur.msgs.slice(0, -1)) });
+  for await (const ch of res.stream) {
+    if (stopped) break;
+    let t = ""; try { t = ch.text(); } catch {}
+    a.c += t; paint();
+  }
+  if (!a.c && !stopped) { a.c = "উত্তর খালি এসেছে। আবার চেষ্টা করুন।"; a.err = true; }
+}
+async function runImage(a) {
+  if (!imageModel) throw new Error(aiErr || "AI সংযোগ নেই");
+  const last = cur.msgs[cur.msgs.length - 2];
+  const parts = [];
+  if (last.inline) parts.push({ inlineData: last.inline });
+  parts.push({ text: last.c });
+  const res = await imageModel.generateContent({ contents: [{ role: "user", parts }] });
+  const out = res.response.candidates?.[0]?.content?.parts || [];
+  a.c = out.filter(p => p.text).map(p => p.text).join("\n").trim();
+  const im = out.find(p => p.inlineData);
+  if (im) a.gen = `data:${im.inlineData.mimeType};base64,${im.inlineData.data}`;
+  if (!a.c && !a.gen) { a.c = "ছবি তৈরি বা এডিট হয়নি। নির্দেশটি অন্যভাবে লিখে আবার চেষ্টা করুন।"; a.err = true; }
+}
+function regenerate() {
+  if (busy || !cur) return;
+  const last = cur.msgs[cur.msgs.length - 1];
+  const mode = !!last.img;
+  cur.msgs.pop();
+  generate(mode);
+}
+function editGenerated(dataUrl) {
+  att = { ...parseDataUrl(dataUrl), url: dataUrl };
+  $("#ati").src = dataUrl; $("#att").hidden = false;
+  setMode(true); setGo(); $("#ci").focus();
+}
+function clearAtt() { att = null; $("#att").hidden = true; $("#file").value = ""; setGo(); }
+
+// ===== Input =====
+$("#go").onclick = () => {
+  if (busy) { stopped = true; return; }
+  const t = $("#ci").value.trim();
+  if (t || att) ask(t); else openVoice();
+};
+$("#ci").oninput = () => { grow(); setGo(); };
+$("#ci").onkeydown = e => {
+  if (e.key === "Enter" && !e.shiftKey && !("ontouchstart" in window)) {
+    e.preventDefault();
+    if (!busy) $("#go").onclick();
+  }
+};
+$("#bp").onclick = () => $("#file").click();
+$("#bmode").onclick = () => setMode(!imgMode);
+$("#atx").onclick = clearAtt;
+$("#file").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (!/^image\/(png|jpeg|webp)$/.test(f.type)) return toast("শুধু PNG, JPG বা WebP চলবে");
+  if (f.size > 8 * 1024 * 1024) return toast("ছবি ৮ MB-এর বেশি হতে পারবে না");
+  const url = await readDataUrl(f);
+  att = { ...parseDataUrl(url), url };
+  $("#ati").src = url; $("#att").hidden = false;
+  setMode(true); setGo();
+  toast("এডিট মোড চালু। প্রশ্ন করতে চাইলে মোড বন্ধ করুন");
+};
+
+// ===== Sidebar =====
+function drawList() {
+  const q = $("#sq").value.trim().toLowerCase(), l = $("#lst"); l.innerHTML = "";
+  const rows = chats.filter(c => !q || c.title.toLowerCase().includes(q));
+  if (!rows.length) { const e = document.createElement("div"); e.className = "lbl"; e.textContent = "কোনো চ্যাট নেই"; l.appendChild(e); return; }
+  rows.forEach(c => {
+    const b = document.createElement("div"); b.className = "nb" + (cur && cur.id === c.id ? " on" : ""); b.tabIndex = 0;
+    const s = document.createElement("span"); s.textContent = c.title;
+    const x = document.createElement("button"); x.innerHTML = ic("trash", 15); x.setAttribute("aria-label", "মুছুন");
+    x.onclick = ev => { ev.stopPropagation(); if (busy && cur && cur.id === c.id) return; chats = chats.filter(k => k.id !== c.id); if (cur && cur.id === c.id) cur = null; save(); renderAll(true); };
+    b.onclick = () => { if (busy) return; cur = c; renderAll(true); side(false); };
+    b.append(s, x); l.appendChild(b);
+  });
+}
+function side(o) { $("#pan").classList.toggle("open", o); $("#scrim").hidden = !o; }
+$("#bm").onclick = () => side(true);
+$("#scrim").onclick = () => side(false);
+$("#sq").oninput = drawList;
+const newChat = () => { if (busy) return; cur = null; clearAtt(); renderAll(true); side(false); $("#ci").focus(); };
+$("#bn").onclick = newChat; $("#sn").onclick = newChat;
+$("#sc").onclick = () => { if (busy) return; chats = []; cur = null; save(); renderAll(true); side(false); toast("সব চ্যাট মুছে গেছে"); };
+document.querySelectorAll("[data-th]").forEach(b => b.onclick = () => {
+  const v = b.dataset.th;
+  v === "auto" ? document.documentElement.removeAttribute("data-theme") : document.documentElement.setAttribute("data-theme", v);
+  store.set("fat_th", v); markTheme();
+});
+function markTheme() { const v = store.get("fat_th", "auto"); document.querySelectorAll("[data-th]").forEach(b => b.classList.toggle("on", b.dataset.th === v)); }
+{ const v = store.get("fat_th", "auto"); if (v !== "auto") document.documentElement.setAttribute("data-theme", v); markTheme(); }
+
+// ===== Live voice =====
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, voiceOn = false, listening = false, bnWarned = false;
+const vst = (t, c) => { $("#vs").textContent = t; $("#vo").className = "orb " + (c || ""); };
+
+function openVoice() {
+  if (!F.uid || !F.trialOk) return toast("আগে লগইন করুন");
+  if (!SR) return toast("এই ব্রাউজারে ভয়েস ইনপুট নেই। Chrome বা Android ব্যবহার করুন।");
+  voiceOn = true;
+  $("#vu").textContent = ""; $("#va").textContent = "";
+  $("#voice").classList.add("open");
+  listen();
+}
+function closeVoice() {
+  voiceOn = false; listening = false;
+  try { rec && rec.abort(); } catch {}
+  try { speechSynthesis.cancel(); } catch {}
+  $("#voice").classList.remove("open");
+}
+function waitIdle() {
+  if (!voiceOn) return;
+  if (busy || speechSynthesis.speaking || listening) return setTimeout(waitIdle, 400);
+  listen();
+}
+function listen() {
+  if (!voiceOn || busy || listening || speechSynthesis.speaking) return;
+  listening = true;
+  let heard = "";
+  rec = new SR();
+  rec.lang = lang; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  rec.onstart = () => vst("বলুন, আমি শুনছি…", "li");
+  rec.onresult = e => {
+    heard = Array.from(e.results).map(r => r[0].transcript).join(" ").trim();
+    $("#vu").textContent = heard;
+  };
+  rec.onerror = e => {
+    if (/not-allowed|service-not-allowed/.test(e.error)) { vst("মাইক্রোফোনের অনুমতি দিন", ""); voiceOn = false; }
+    else if (e.error === "network") vst("ভয়েস স্বীকৃতির জন্য ইন্টারনেট লাগবে", "");
+  };
+  rec.onend = async () => {
+    listening = false;
+    if (!voiceOn) return;
+    const said = heard.trim(); heard = "";
+    if (!said || busy) return waitIdle();
+    vst("ভাবছি…", "th");
+    $("#va").textContent = "";
+    const reply = await ask(said, true);
+    if (!voiceOn) return;
+    $("#va").textContent = reply || "";
+    if (reply) speak(reply); else waitIdle();
+  };
+  try { rec.start(); }
+  catch { listening = false; setTimeout(waitIdle, 500); }
+}
+function pickVoice() {
+  const pre = lang.slice(0, 2).toLowerCase();
+  return speechSynthesis.getVoices().find(v => v.lang.replace("_", "-").toLowerCase().startsWith(pre)) || null;
+}
+function speak(text) {
+  if (!("speechSynthesis" in window)) return waitIdle();
+  speechSynthesis.cancel();
+  const clean = text.replace(/```[\s\S]*?```/g, " কোড ").replace(/[*`#_>]/g, "").slice(0, 900).trim();
+  if (!clean) return waitIdle();
+  const u = new SpeechSynthesisUtterance(clean);
+  u.lang = lang; u.rate = 1;
+  const v = pickVoice();
+  if (v) u.voice = v;
+  else if (lang === "bn-BD" && !bnWarned) { bnWarned = true; toast("ডিভাইসে বাংলা ভয়েস নেই। Android-এর Text-to-speech সেটিংসে বাংলা ভয়েস ইনস্টল করুন।"); }
+  u.onend = u.onerror = () => { if (voiceOn) { vst("বলুন, আমি শুনছি…", "li"); waitIdle(); } };
+  if (voiceOn) vst("বলছি… (থামাতে ট্যাপ করুন)", "sp");
+  speechSynthesis.speak(u);
+}
+function speakOnce(text) {
+  if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
+  voiceOn = false; speak(text);
+}
+$("#vo").onclick = () => {
+  if (speechSynthesis.speaking) speechSynthesis.cancel();
+  else if (voiceOn && !listening && !busy) listen();
+};
+$("#vx").onclick = closeVoice;
+$("#vl").onclick = () => {
+  lang = lang === "bn-BD" ? "en-US" : "bn-BD";
+  $("#vl").textContent = lang === "bn-BD" ? "বাংলা" : "English";
+  try { rec && rec.abort(); } catch {}
+};
+
+// ===== Start =====
+setGo();
+showScreen("splash");
+boot();
+</script>
+</body>
+</html>
